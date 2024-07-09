@@ -1,14 +1,12 @@
 import contextlib
 import gradio as gr
 from modules import scripts
-from modules import script_callbacks
 import json
 import os
 
-PROMPTS_FILE = "prompts.json"
+# Shoutout to https://github.com/EnsignMK/ExampleSendText for giving an example of how to send input to the main prompt :)
 
-def send_text_to_prompt(new_text):
-    return new_text
+PROMPTS_FILE = "prompts.json"
 
 def copy_from_active_prompt(is_negative, pos_prompt, neg_prompt):
     if is_negative:
@@ -22,7 +20,7 @@ class MultiPromptManager(scripts.Script):
     def title(self):
         return "Multi-Prompt Manager"
 
-    def show(self, is_img2img= True):
+    def show(self, is_img2img):
         return scripts.AlwaysVisible
 
     def ui(self, is_img2img):
@@ -79,8 +77,13 @@ class MultiPromptManager(scripts.Script):
                     prompt_dropdown.change(fn=load_prompt, inputs=[prompt_dropdown], outputs=[prompt_input])
                     save_button.click(fn=save_prompt, inputs=[new_prompt_name, prompt_input], outputs=[prompt_dropdown, new_prompt_name])
                     delete_button.click(fn=delete_prompt, inputs=[prompt_dropdown], outputs=[prompt_dropdown, prompt_input, new_prompt_name])
-                    use_prompt_button.click(fn=use_prompt, inputs=[prompt_input, negative_prompt_toggle], outputs=[self.boxx, self.neg_boxx])
-                    copy_prompt_button.click(fn=copy_from_active_prompt, inputs=[negative_prompt_toggle, self.boxx, self.neg_boxx], outputs=[prompt_input])
+
+                    if is_img2img:
+                        use_prompt_button.click(fn=use_prompt, inputs=[prompt_input, negative_prompt_toggle], outputs=[self.boxxIMG, self.neg_boxxIMG])
+                        copy_prompt_button.click(fn=copy_from_active_prompt, inputs=[negative_prompt_toggle, self.boxxIMG, self.neg_boxxIMG], outputs=[prompt_input])
+                    else:
+                        use_prompt_button.click(fn=use_prompt, inputs=[prompt_input, negative_prompt_toggle], outputs=[self.boxx, self.neg_boxx])
+                        copy_prompt_button.click(fn=copy_from_active_prompt, inputs=[negative_prompt_toggle, self.boxx, self.neg_boxx], outputs=[prompt_input])
 
         return [prompt_dropdown, use_prompt_button, save_button, delete_button, copy_prompt_button, new_prompt_name, prompt_input, negative_prompt_toggle]
     
