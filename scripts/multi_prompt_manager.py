@@ -32,11 +32,10 @@ class MultiPromptManager(scripts.Script):
             prompts = {}
 
         def load_prompt(selected_prompt):
-            if selected_prompt in prompts:
-                return prompts[selected_prompt]
-            return ""
+            prompt_data = prompts.get(selected_prompt, {"prompt": "", "is_negative": False})
+            return prompt_data['prompt'], prompt_data['is_negative']
 
-        def save_prompt(new_name, new_prompt):
+        def save_prompt(new_name, new_prompt, is_negative):
             if not new_name:
                 existing_names = set(prompts.keys())
                 i = 1
@@ -44,7 +43,7 @@ class MultiPromptManager(scripts.Script):
                     i += 1
                 new_name = f"prompt {i}"
 
-            prompts[new_name] = new_prompt
+            prompts[new_name] = {'prompt': new_prompt, 'is_negative': is_negative}
             with open(PROMPTS_FILE, 'w') as f:
                 json.dump(prompts, f)
             return gr.Dropdown.update(choices=list(prompts.keys())), ""
@@ -64,18 +63,22 @@ class MultiPromptManager(scripts.Script):
         
         with gr.Group():
             with gr.Accordion("Multi-Prompt Manager", open=False):
-                prompt_dropdown = gr.Dropdown(choices=list(prompts.keys()), label="Select Prompt")
+                with gr.Row():
+                    prompt_dropdown = gr.Dropdown(choices=list(prompts.keys()), label="Select Prompt")
+                    new_prompt_name = gr.Textbox(label="Enter Prompt Name", tooltip="Give this prompt a cool and memorable name.")
+
                 use_prompt_button = gr.Button("Use Prompt", variant="primary", elem_id="use-prompt-button", tooltip="Replace whatever text is currently in the active prompt field with the selected prompt.")
-                save_button = gr.Button("Save Prompt", tooltip="Save the prompt to your prompts list.")
-                delete_button = gr.Button("Delete Prompt", tooltip="Remove the prompt from your prompts list.")
-                copy_prompt_button = gr.Button("Copy from Active Prompt", tooltip="Copy over the prompt from the active prompt field into Multi-Prompt Manager.")
-                new_prompt_name = gr.Textbox(label="New Prompt Name", tooltip="Give this prompt a cool and memorable name.")
                 prompt_input = gr.Textbox(label="Prompt", lines=5)
-                negative_prompt_toggle = gr.Checkbox(label="Is Negative Prompt", value=False, tooltip="Whether or not this should be sent over to the negative prompt field.")
+                negative_prompt_toggle = gr.Checkbox(label="This is a Negative Prompt", value=False, tooltip="Whether or not this should be sent over to the negative prompt field.")
+                
+                with gr.Row():
+                    save_button = gr.Button("Save Prompt", tooltip="Save the prompt to your prompts list.")
+                    delete_button = gr.Button("Delete Prompt", tooltip="Remove the prompt from your prompts list.")
+                    copy_prompt_button = gr.Button("Copy from Active Prompt", tooltip="Copy over the prompt from the active prompt field into Multi-Prompt Manager.")
 
                 with contextlib.suppress(AttributeError):
-                    prompt_dropdown.change(fn=load_prompt, inputs=[prompt_dropdown], outputs=[prompt_input])
-                    save_button.click(fn=save_prompt, inputs=[new_prompt_name, prompt_input], outputs=[prompt_dropdown, new_prompt_name])
+                    prompt_dropdown.change(fn=load_prompt, inputs=[prompt_dropdown], outputs=[prompt_input, negative_prompt_toggle])
+                    save_button.click(fn=save_prompt, inputs=[new_prompt_name, prompt_input, negative_prompt_toggle], outputs=[prompt_dropdown, new_prompt_name])
                     delete_button.click(fn=delete_prompt, inputs=[prompt_dropdown], outputs=[prompt_dropdown, prompt_input, new_prompt_name])
 
                     if is_img2img:
