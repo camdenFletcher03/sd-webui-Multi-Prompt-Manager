@@ -91,6 +91,8 @@ class MultiPromptManager(scripts.Script):
                         use_prompt_button.click(fn=use_prompt, inputs=[prompt_input, negative_prompt_toggle], outputs=[self.boxx, self.neg_boxx])
                         copy_prompt_button.click(fn=copy_from_active_prompt, inputs=[negative_prompt_toggle, self.boxx, self.neg_boxx], outputs=[prompt_input])
 
+        [setattr(c, 'do_not_save_to_config', True) for c in (prompt_dropdown, new_prompt_name, prompt_input)]
+
         return [prompt_dropdown, use_prompt_button, save_button, delete_button, copy_prompt_button, new_prompt_name, prompt_input, negative_prompt_toggle]
     
     def after_component(self, component, **kwargs):
