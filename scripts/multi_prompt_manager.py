@@ -28,7 +28,7 @@ class MultiPromptManager(scripts.Script):
     def ui(self, is_img2img):
         # Load existing prompts
         if os.path.exists(PROMPTS_FILE):
-            with open(PROMPTS_FILE, 'r') as f:
+            with open(PROMPTS_FILE, 'r', encoding='utf-8') as f:
                 prompts = json.load(f)
         else:
             prompts = {}
@@ -46,7 +46,7 @@ class MultiPromptManager(scripts.Script):
                 new_name = f"prompt {i}"
 
             prompts[new_name] = {'prompt': new_prompt, 'is_negative': is_negative}
-            with open(PROMPTS_FILE, 'w') as f:
+            with open(PROMPTS_FILE, 'w', encoding='utf-8') as f:
                 json.dump(prompts, f)
             return gr.Dropdown.update(choices=list(prompts.keys())), ""
 
