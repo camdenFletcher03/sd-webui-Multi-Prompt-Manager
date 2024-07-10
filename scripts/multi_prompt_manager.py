@@ -6,12 +6,15 @@ import os
 
 # Shoutout to https://github.com/EnsignMK/ExampleSendText for giving an example of how to send input to the main prompt :)
 
-PROMPTS_FILE = "prompts.json"
+EXTENSION_ROOT = scripts.basedir()
+PROMPTS_FILE = os.path.join(EXTENSION_ROOT, "prompts.json")
+
 
 def copy_from_active_prompt(is_negative, pos_prompt, neg_prompt):
     if is_negative:
         return neg_prompt
     return pos_prompt
+
 
 class MultiPromptManager(scripts.Script):
     def __init__(self) -> None:
@@ -26,7 +29,7 @@ class MultiPromptManager(scripts.Script):
     def ui(self, is_img2img):
         # Load existing prompts
         if os.path.exists(PROMPTS_FILE):
-            with open(PROMPTS_FILE, 'r') as f:
+            with open(PROMPTS_FILE, 'r', encoding='utf-8') as f:
                 prompts = json.load(f)
         else:
             prompts = {}
@@ -44,15 +47,15 @@ class MultiPromptManager(scripts.Script):
                 new_name = f"prompt {i}"
 
             prompts[new_name] = {'prompt': new_prompt, 'is_negative': is_negative}
-            with open(PROMPTS_FILE, 'w') as f:
-                json.dump(prompts, f)
+            with open(PROMPTS_FILE, 'w', encoding='utf-8') as f:
+                json.dump(prompts, f, indent=4, ensure_ascii=False)
             return gr.Dropdown.update(choices=list(prompts.keys())), ""
 
         def delete_prompt(selected_prompt):
             if selected_prompt in prompts:
                 del prompts[selected_prompt]
                 with open(PROMPTS_FILE, 'w') as f:
-                    json.dump(prompts, f)
+                    json.dump(prompts, f, indent=4, ensure_ascii=False)
                 return gr.Dropdown.update(choices=list(prompts.keys())), "", ""
             return gr.Dropdown.update(), "", ""
 
@@ -88,6 +91,8 @@ class MultiPromptManager(scripts.Script):
                         use_prompt_button.click(fn=use_prompt, inputs=[prompt_input, negative_prompt_toggle], outputs=[self.boxx, self.neg_boxx])
                         copy_prompt_button.click(fn=copy_from_active_prompt, inputs=[negative_prompt_toggle, self.boxx, self.neg_boxx], outputs=[prompt_input])
 
+        [setattr(c, 'do_not_save_to_config', True) for c in (prompt_dropdown, new_prompt_name, prompt_input)]
+
         return [prompt_dropdown, use_prompt_button, save_button, delete_button, copy_prompt_button, new_prompt_name, prompt_input, negative_prompt_toggle]
     
     def after_component(self, component, **kwargs):
@@ -99,5 +104,6 @@ class MultiPromptManager(scripts.Script):
             self.neg_boxx = component
         if kwargs.get("elem_id") == "img2img_neg_prompt":
             self.neg_boxxIMG = component
+
 
 print("Successfully loaded Multi-Prompt Manager extension.")
