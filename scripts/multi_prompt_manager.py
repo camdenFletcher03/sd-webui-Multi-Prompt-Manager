@@ -6,7 +6,8 @@ import os
 
 # Shoutout to https://github.com/EnsignMK/ExampleSendText for giving an example of how to send input to the main prompt :)
 
-PROMPTS_FILE = "prompts.json"
+EXTENSION_ROOT = scripts.basedir()
+PROMPTS_FILE = os.path.join(EXTENSION_ROOT, "prompts.json")
 
 
 def copy_from_active_prompt(is_negative, pos_prompt, neg_prompt):
