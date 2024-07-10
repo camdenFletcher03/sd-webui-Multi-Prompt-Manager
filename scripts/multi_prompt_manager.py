@@ -8,10 +8,12 @@ import os
 
 PROMPTS_FILE = "prompts.json"
 
+
 def copy_from_active_prompt(is_negative, pos_prompt, neg_prompt):
     if is_negative:
         return neg_prompt
     return pos_prompt
+
 
 class MultiPromptManager(scripts.Script):
     def __init__(self) -> None:
@@ -99,5 +101,6 @@ class MultiPromptManager(scripts.Script):
             self.neg_boxx = component
         if kwargs.get("elem_id") == "img2img_neg_prompt":
             self.neg_boxxIMG = component
+
 
 print("Successfully loaded Multi-Prompt Manager extension.")
