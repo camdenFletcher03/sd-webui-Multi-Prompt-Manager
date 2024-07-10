@@ -48,14 +48,14 @@ class MultiPromptManager(scripts.Script):
 
             prompts[new_name] = {'prompt': new_prompt, 'is_negative': is_negative}
             with open(PROMPTS_FILE, 'w', encoding='utf-8') as f:
-                json.dump(prompts, f)
+                json.dump(prompts, f, indent=4, ensure_ascii=False)
             return gr.Dropdown.update(choices=list(prompts.keys())), ""
 
         def delete_prompt(selected_prompt):
             if selected_prompt in prompts:
                 del prompts[selected_prompt]
                 with open(PROMPTS_FILE, 'w') as f:
-                    json.dump(prompts, f)
+                    json.dump(prompts, f, indent=4, ensure_ascii=False)
                 return gr.Dropdown.update(choices=list(prompts.keys())), "", ""
             return gr.Dropdown.update(), "", ""
 
